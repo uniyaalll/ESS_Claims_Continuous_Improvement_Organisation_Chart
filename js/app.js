@@ -1,7 +1,11 @@
 (() => {
   const THEME_KEY = "axa-org-theme";
+  // Standard PowerPoint widescreen slide pixel size (16:9)
+  const PPT_WIDTH = 1920;
+  const PPT_HEIGHT = 1080;
   const chartViewport = document.getElementById("chart-viewport");
   const chartScaler = document.getElementById("chart-scaler");
+  const pptSlide = document.getElementById("ppt-slide");
   const orgRoot = document.getElementById("org-root");
   const statusEl = document.getElementById("status");
   const titleEl = document.getElementById("chart-title");
@@ -15,7 +19,7 @@
   let fitRaf = 0;
   let exportBlob = null;
   let exportBlobPromise = null;
-  const APP_BUILD = "20261029c";
+  const APP_BUILD = "20261029d";
 
   function showToast(message) {
     toastEl.textContent = message;
@@ -40,8 +44,10 @@
     themeToggle.querySelector(".label").textContent = isDark
       ? "Light mode"
       : "Dark mode";
-    // Theme affects export colors — refresh cached PNG
-    queueExportRefresh();
+    // Theme affects export colors — refresh only once a chart exists
+    if (orgRoot.querySelector(".org-tree")) {
+      queueExportRefresh();
+    }
   }
 
   function buildTree(people) {
@@ -181,31 +187,49 @@
     }
   }
 
-  async function chartToCanvas() {
+  /**
+   * Capture the full 16:9 slide (not just the tree) and rasterize to an
+   * exact PowerPoint widescreen canvas: 1920×1080.
+   */
+  async function slideToCanvas() {
     if (typeof html2canvas !== "function") {
       throw new Error("html2canvas is not available");
     }
+    if (!pptSlide) throw new Error("Slide frame is missing");
+    if (!orgRoot.querySelector(".org-tree")) throw new Error("Chart is not ready");
 
-    const tree = orgRoot.querySelector(".org-tree");
-    if (!tree) throw new Error("Chart is not ready");
-
-    const previous = chartScaler.style.transform;
-    chartScaler.style.transform = "scale(1)";
-
-    // Allow layout to settle at natural size before capture
+    // Keep the on-screen fitted scale so export matches what users see
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
     const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    const canvas = await html2canvas(tree, {
-      backgroundColor: isDark ? "#12122a" : "#ffffff",
-      scale: Math.min(2, window.devicePixelRatio || 2),
+    const bg = isDark ? "#12122a" : "#ffffff";
+    const slideW = pptSlide.offsetWidth || pptSlide.getBoundingClientRect().width;
+    const slideH = pptSlide.offsetHeight || pptSlide.getBoundingClientRect().height;
+    if (!slideW || !slideH) throw new Error("Slide has no size");
+
+    // Render at high DPI so the downscale to 1920×1080 stays sharp
+    const captureScale = Math.max(PPT_WIDTH / slideW, 2);
+
+    const captured = await html2canvas(pptSlide, {
+      backgroundColor: bg,
+      scale: captureScale,
+      width: slideW,
+      height: slideH,
       useCORS: true,
+      allowTaint: false,
       logging: false,
     });
 
-    chartScaler.style.transform = previous || "scale(1)";
-    fitChart();
-    return canvas;
+    const out = document.createElement("canvas");
+    out.width = PPT_WIDTH;
+    out.height = PPT_HEIGHT;
+    const ctx = out.getContext("2d");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, PPT_WIDTH, PPT_HEIGHT);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(captured, 0, 0, PPT_WIDTH, PPT_HEIGHT);
+    return out;
   }
 
   function canvasToPngBlob(canvas) {
@@ -246,7 +270,7 @@
   }
 
   async function buildExportBlob() {
-    const canvas = await chartToCanvas();
+    const canvas = await slideToCanvas();
     const blob = await canvasToPngBlob(canvas);
     if (!blob || !blob.size) throw new Error("Empty image");
     exportBlob = blob;
@@ -270,7 +294,7 @@
 
   function pngFilename() {
     const stamp = new Date().toISOString().slice(0, 10);
-    return `ess-claims-org-chart-${stamp}.png`;
+    return `ess-claims-org-chart-ppt-1920x1080-${stamp}.png`;
   }
 
   async function ensureExportBlob() {
@@ -288,18 +312,16 @@
       // Fast path: PNG already prepared — download in this click gesture
       if (exportBlob) {
         triggerFileDownload(exportBlob, filename);
-        showToast(`Downloading to your device… (${APP_BUILD})`);
-        // Refresh cache in the background for the next tap
+        showToast(`Slide PNG downloading (1920×1080)…`);
         queueExportRefresh();
         return;
       }
 
       downloadBtn.disabled = true;
-      showToast("Preparing PNG…");
-      // Warm cache on pointerdown usually avoids this path
+      showToast("Preparing slide PNG…");
       const blob = await ensureExportBlob();
       triggerFileDownload(blob, filename);
-      showToast(`Downloading to your device… (${APP_BUILD})`);
+      showToast(`Slide PNG downloading (1920×1080)…`);
       queueExportRefresh();
     } catch (err) {
       console.error(err);
@@ -312,20 +334,17 @@
   async function copyChart() {
     try {
       copyBtn.disabled = true;
-      const canvas = await chartToCanvas();
-
-      const blob = await canvasToPngBlob(canvas);
+      const blob = exportBlob || (await ensureExportBlob());
 
       if (navigator.clipboard && window.ClipboardItem) {
         await navigator.clipboard.write([
           new ClipboardItem({ "image/png": blob }),
         ]);
-        showToast("Org chart copied as image");
+        showToast("Full slide copied (1920×1080)");
       } else {
-        // Fallback: open image so the user can copy manually
         const url = URL.createObjectURL(blob);
         window.open(url, "_blank");
-        showToast("Opened image (clipboard unavailable)");
+        showToast("Opened slide image (clipboard unavailable)");
       }
     } catch (err) {
       console.error(err);
@@ -340,13 +359,15 @@
     applyTheme(current === "dark" ? "light" : "dark");
   });
 
-  // Start preparing the PNG as soon as the user touches the button so the
-  // actual click can download synchronously (required on mobile Safari).
-  downloadBtn.addEventListener("pointerdown", () => {
+  // Warm the export as soon as the user presses Download/Copy so mobile
+  // Safari can still honor a synchronous download on click.
+  function warmExportOnPress() {
     if (!exportBlob && !exportBlobPromise) {
       queueExportRefresh({ clear: false });
     }
-  });
+  }
+  downloadBtn.addEventListener("pointerdown", warmExportOnPress);
+  copyBtn.addEventListener("pointerdown", warmExportOnPress);
   downloadBtn.addEventListener("click", downloadChart);
   copyBtn.addEventListener("click", copyChart);
 

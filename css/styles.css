@@ -17,7 +17,10 @@
   --btn-hover: #eef0f7;
   --toast-bg: #00008f;
   --toast-fg: #ffffff;
-  --font: "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
+  /* Standard PowerPoint widescreen slide */
+  --ppt-ratio: 16 / 9;
+  --font: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --font-bold: Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
 
 [data-theme="dark"] {
@@ -70,49 +73,30 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.75rem 1.25rem;
+  padding: 0.65rem 1.25rem;
   background: var(--header-bg);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(10px);
   z-index: 2;
 }
 
-.brand {
+.topbar-label {
   display: flex;
-  align-items: center;
-  gap: 0.9rem;
+  flex-direction: column;
+  gap: 0.1rem;
   min-width: 0;
 }
 
-.brand img {
-  height: 28px;
-  width: auto;
-  display: block;
-}
-
-[data-theme="dark"] .brand img {
-  filter: brightness(0) invert(1);
-}
-
-.brand-copy {
-  min-width: 0;
-}
-
-.brand-copy h1 {
-  margin: 0;
-  font-size: 0.95rem;
+.topbar-kicker {
+  font-family: var(--font-bold);
   font-weight: 700;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
 }
 
-.brand-copy p {
-  margin: 0.1rem 0 0;
-  font-size: 0.75rem;
+.topbar-hint {
+  font-size: 0.72rem;
   color: var(--ink-muted);
-  white-space: nowrap;
 }
 
 .actions {
@@ -127,9 +111,9 @@ body {
   border: 1px solid var(--btn-border);
   background: var(--btn-bg);
   color: var(--ink);
-  font: inherit;
+  font-family: var(--font);
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
   padding: 0.55rem 0.8rem;
   border-radius: 6px;
@@ -184,26 +168,85 @@ body {
   position: relative;
   min-height: 0;
   padding: 0.75rem 1rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.frame {
-  height: 100%;
+.slide-shell {
   width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Exact PowerPoint widescreen proportions (13.333" × 7.5" → 16:9) */
+.ppt-slide {
+  aspect-ratio: var(--ppt-ratio);
+  width: min(100%, calc((100dvh - 5.25rem) * 16 / 9));
+  max-height: calc(100dvh - 5.25rem);
+  height: auto;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 4px;
   background: var(--surface-elevated);
   box-shadow: var(--shadow);
   overflow: hidden;
   position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.slide-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-elevated);
+}
+
+.slide-logo {
+  height: 28px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .slide-logo {
+  filter: brightness(0) invert(1);
+}
+
+.slide-titles {
+  min-width: 0;
+}
+
+.slide-titles h1 {
+  margin: 0;
+  font-family: var(--font-bold);
+  font-size: clamp(0.85rem, 1.6vw, 1.15rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slide-titles p {
+  margin: 0.15rem 0 0;
+  font-size: clamp(0.65rem, 1.1vw, 0.8rem);
+  color: var(--ink-muted);
 }
 
 .chart-viewport {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background: var(--surface-elevated);
 }
 
 .chart-scaler {
@@ -215,8 +258,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   width: max-content;
+  font-family: var(--font);
 }
 
 .level {
@@ -244,6 +288,7 @@ body {
   text-align: center;
   position: relative;
   z-index: 1;
+  font-family: var(--font);
 }
 
 .card.root {
@@ -256,6 +301,7 @@ body {
 }
 
 .card .name {
+  font-family: var(--font-bold);
   font-size: 0.88rem;
   font-weight: 700;
   line-height: 1.25;
@@ -266,6 +312,7 @@ body {
 .card .role {
   margin: 0.28rem 0 0;
   font-size: 0.72rem;
+  font-weight: 400;
   line-height: 1.3;
   color: var(--ink-muted);
 }
@@ -273,7 +320,7 @@ body {
 .card .team {
   margin: 0.35rem 0 0;
   font-size: 0.65rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--axa-navy);
@@ -292,7 +339,6 @@ body {
   position: relative;
 }
 
-/* Vertical connector from parent to horizontal bar */
 .node > .children::before {
   content: "";
   position: absolute;
@@ -304,7 +350,6 @@ body {
   transform: translateX(-50%);
 }
 
-/* Horizontal bar across children */
 .node > .children::after {
   content: "";
   position: absolute;
@@ -328,7 +373,6 @@ body {
   transform: translateX(-50%);
 }
 
-/* Single child: no wide horizontal bar needed */
 .node > .children.single::after {
   display: none;
 }
@@ -349,6 +393,7 @@ body {
   place-items: center;
   color: var(--ink-muted);
   font-size: 0.9rem;
+  font-family: var(--font);
   padding: 2rem;
   text-align: center;
   z-index: 3;
@@ -373,8 +418,9 @@ body {
   color: var(--toast-fg);
   padding: 0.65rem 1rem;
   border-radius: 8px;
+  font-family: var(--font);
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   opacity: 0;
   pointer-events: none;
   transition: transform 0.25s ease, opacity 0.25s ease;
@@ -392,15 +438,7 @@ body {
     gap: 0.5rem;
   }
 
-  .brand img {
-    height: 22px;
-  }
-
-  .brand-copy h1 {
-    font-size: 0.8rem;
-  }
-
-  .brand-copy p {
+  .topbar-hint {
     display: none;
   }
 
@@ -414,5 +452,14 @@ body {
 
   .stage {
     padding: 0.5rem;
+  }
+
+  .slide-header {
+    padding: 0.55rem 0.7rem;
+    gap: 0.55rem;
+  }
+
+  .slide-logo {
+    height: 22px;
   }
 }

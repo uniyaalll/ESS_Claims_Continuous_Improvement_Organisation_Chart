@@ -6,24 +6,15 @@
     <meta name="description" content="AXA XL ESS Claims Continuous Improvement organisation chart" />
     <title>ESS Claims — Continuous Improvement | AXA XL</title>
     <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <link rel="stylesheet" href="./css/styles.css?v=20261029c" />
+    <link rel="stylesheet" href="./css/styles.css?v=20261029d" />
   </head>
   <body>
     <div class="app">
       <header class="topbar">
-        <div class="brand">
-          <img src="./assets/axa-xl-logo.png" alt="AXA XL" width="610" height="156" />
-          <div class="brand-copy">
-            <h1 id="chart-title">ESS Claims — Continuous Improvement</h1>
-            <p id="chart-subtitle">Organisation Chart</p>
-          </div>
+        <div class="topbar-label">
+          <span class="topbar-kicker">AXA XL</span>
+          <span class="topbar-hint">16:9 PowerPoint slide</span>
         </div>
         <div class="actions">
           <button type="button" class="btn" id="theme-toggle" aria-pressed="false" title="Toggle theme">
@@ -33,14 +24,14 @@
             </svg>
             <span class="label">Dark mode</span>
           </button>
-          <button type="button" class="btn" id="copy-btn" title="Copy chart as image">
+          <button type="button" class="btn" id="copy-btn" title="Copy full slide as image">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <rect x="9" y="9" width="11" height="11" rx="2" />
               <path d="M5 15V5a2 2 0 0 1 2-2h10" />
             </svg>
             <span class="label">Copy</span>
           </button>
-          <button type="button" class="btn btn-primary" id="download-btn" title="Download chart as PNG">
+          <button type="button" class="btn btn-primary" id="download-btn" title="Download full slide as PNG (1920×1080)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M12 4v10" />
               <path d="M8 10l4 4 4-4" />
@@ -52,12 +43,31 @@
       </header>
 
       <main class="stage">
-        <div class="frame" aria-label="Organisation chart frame">
-          <div class="chart-viewport" id="chart-viewport">
-            <div class="chart-scaler" id="chart-scaler">
-              <div id="org-root"></div>
+        <div class="slide-shell">
+          <div
+            class="ppt-slide"
+            id="ppt-slide"
+            aria-label="Organisation chart PowerPoint slide, 16 by 9"
+          >
+            <div class="slide-header">
+              <img
+                src="./assets/axa-xl-logo.png"
+                alt="AXA XL"
+                width="610"
+                height="156"
+                class="slide-logo"
+              />
+              <div class="slide-titles">
+                <h1 id="chart-title">ESS Claims — Continuous Improvement</h1>
+                <p id="chart-subtitle">Organisation Chart</p>
+              </div>
             </div>
-            <div class="status" id="status">Loading organisation chart…</div>
+            <div class="chart-viewport" id="chart-viewport">
+              <div class="chart-scaler" id="chart-scaler">
+                <div id="org-root"></div>
+              </div>
+              <div class="status" id="status">Loading organisation chart…</div>
+            </div>
           </div>
         </div>
       </main>
@@ -66,7 +76,6 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <!-- Cache-busted so devices do not keep an old download handler -->
-    <script src="./js/app.js?v=20261029c"></script>
+    <script src="./js/app.js?v=20261029d"></script>
   </body>
 </html>
