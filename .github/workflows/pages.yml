@@ -1,0 +1,61 @@
+name: Sync Excel and deploy Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install openpyxl
+
+      - name: Regenerate JSON from Excel
+        run: python scripts/generate_org_data.py
+
+      - name: Commit synced JSON when Excel changed the chart
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/org-chart.json
+          if git diff --staged --quiet; then
+            echo "JSON already up to date"
+          else
+            git commit -m "chore: sync org-chart.json from Excel"
+            git push
+          fi
+
+      - name: Prepare site package
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r css js assets data _site/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

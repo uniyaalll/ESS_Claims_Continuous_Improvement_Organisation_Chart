@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="AXA XL">
+  <rect width="32" height="32" rx="6" fill="#00008F"/>
+  <path fill="#FF1721" d="M6 22h4.2l.7-2.1h3.2L14.8 22H19l-4.6-12h-3.8L6 22zm5.2-4.6 1.1-3.3 1.1 3.3h-2.2z"/>
+  <text x="20.5" y="22" fill="#FBFCFC" font-family="Arial,sans-serif" font-size="9" font-weight="700">XL</text>
+</svg>

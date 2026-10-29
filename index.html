@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="AXA XL ESS Claims Continuous Improvement organisation chart" />
+    <title>ESS Claims — Continuous Improvement | AXA XL</title>
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <img src="./assets/axa-xl-logo.png" alt="AXA XL" width="610" height="156" />
+          <div class="brand-copy">
+            <h1 id="chart-title">ESS Claims — Continuous Improvement</h1>
+            <p id="chart-subtitle">Organisation Chart</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" id="theme-toggle" aria-pressed="false" title="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M12 3v2M12 19v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M3 12h2M19 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+              <circle cx="12" cy="12" r="4" />
+            </svg>
+            <span class="label">Dark mode</span>
+          </button>
+          <button type="button" class="btn" id="copy-btn" title="Copy chart as image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2" />
+              <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+            </svg>
+            <span class="label">Copy</span>
+          </button>
+          <button type="button" class="btn btn-primary" id="download-btn" title="Download chart as PNG">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M12 4v10" />
+              <path d="M8 10l4 4 4-4" />
+              <path d="M5 18h14" />
+            </svg>
+            <span class="label">Download</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="stage">
+        <div class="frame" aria-label="Organisation chart frame">
+          <div class="chart-viewport" id="chart-viewport">
+            <div class="chart-scaler" id="chart-scaler">
+              <div id="org-root"></div>
+            </div>
+            <div class="status" id="status">Loading organisation chart…</div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="./js/app.js"></script>
+  </body>
+</html>
