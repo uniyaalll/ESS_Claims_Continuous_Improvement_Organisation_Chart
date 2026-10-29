@@ -4,9 +4,9 @@ AXA XL–branded organisation chart hosted on GitHub Pages. Names and reporting 
 
 ## Live chart
 
-**https://uniyal.github.io/ESS_Claims_Continuous_Improvement_Organisation_Chart/**
+**https://uniyaalll.github.io/ESS_Claims_Continuous_Improvement_Organisation_Chart/**
 
-> After the first merge to `main`, enable **Settings → Pages → Source: GitHub Actions** if Pages is not already active. The workflow then publishes the site automatically.
+> After the first push to `main`, enable **Settings → Pages → Source: GitHub Actions** if Pages is not already active. The workflow then publishes the site automatically.
 
 ## Features
 
