@@ -13,12 +13,15 @@
 
   let toastTimer = null;
   let fitRaf = 0;
+  let exportBlob = null;
+  let exportBlobPromise = null;
+  const APP_BUILD = "20261029c";
 
   function showToast(message) {
     toastEl.textContent = message;
     toastEl.classList.add("show");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2800);
   }
 
   function preferredTheme() {
@@ -37,6 +40,8 @@
     themeToggle.querySelector(".label").textContent = isDark
       ? "Light mode"
       : "Dark mode";
+    // Theme affects export colors — refresh cached PNG
+    queueExportRefresh();
   }
 
   function buildTree(people) {
@@ -160,6 +165,7 @@
     orgRoot.appendChild(tree);
 
     fitChart();
+    queueExportRefresh();
   }
 
   async function loadData() {
@@ -211,65 +217,93 @@
     });
   }
 
-  function blobToDataUrl(blob) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result || ""));
-      reader.onerror = () => reject(reader.error || new Error("Could not read PNG"));
-      reader.readAsDataURL(blob);
-    });
-  }
-
-  function clickDownloadLink(href, filename) {
-    const link = document.createElement("a");
-    link.href = href;
-    link.setAttribute("download", filename);
-    link.download = filename;
-    link.rel = "noopener";
-    link.style.position = "fixed";
-    link.style.left = "-9999px";
-    link.style.top = "0";
-    document.body.appendChild(link);
-    // MouseEvent click is more reliable than link.click() on some mobile browsers
-    link.dispatchEvent(
-      new MouseEvent("click", { bubbles: true, cancelable: true, view: window })
-    );
-    link.remove();
-  }
-
   /**
-   * Always trigger a real file download to the device (Downloads / Files).
-   * No "open image / Share" path — that was confusing and not what users want.
+   * Synchronous file download inside a user-gesture handler.
+   * Mobile Safari only honors `download` when this runs in the click turn
+   * (not after an await) — so we keep a pre-rendered PNG blob ready.
    */
-  async function downloadBlobToDevice(blob, filename) {
-    // Legacy Edge
+  function triggerFileDownload(blob, filename) {
+    if (!blob) throw new Error("PNG not ready");
+
     if (navigator.msSaveOrOpenBlob) {
       navigator.msSaveOrOpenBlob(blob, filename);
       return;
     }
 
-    // Data URLs + the download attribute save a file on more mobile browsers
-    // (including iOS Safari) instead of only previewing the image.
-    const dataUrl = await blobToDataUrl(blob);
-    if (!dataUrl) throw new Error("Could not encode PNG");
-    clickDownloadLink(dataUrl, filename);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.setAttribute("download", filename);
+    link.rel = "noopener";
+    link.type = "image/png";
+    link.style.position = "fixed";
+    link.style.left = "-9999px";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }
+
+  async function buildExportBlob() {
+    const canvas = await chartToCanvas();
+    const blob = await canvasToPngBlob(canvas);
+    if (!blob || !blob.size) throw new Error("Empty image");
+    exportBlob = blob;
+    return blob;
+  }
+
+  function queueExportRefresh(options = {}) {
+    const clear = options.clear !== false;
+    if (clear) exportBlob = null;
+    if (exportBlobPromise) return exportBlobPromise;
+    const run = (exportBlobPromise = buildExportBlob()
+      .catch((err) => {
+        console.warn("Export cache refresh failed", err);
+        return null;
+      })
+      .finally(() => {
+        if (exportBlobPromise === run) exportBlobPromise = null;
+      }));
+    return run;
+  }
+
+  function pngFilename() {
+    const stamp = new Date().toISOString().slice(0, 10);
+    return `ess-claims-org-chart-${stamp}.png`;
+  }
+
+  async function ensureExportBlob() {
+    if (exportBlob) return exportBlob;
+    if (exportBlobPromise) {
+      const blob = await exportBlobPromise;
+      if (blob) return blob;
+    }
+    return buildExportBlob();
   }
 
   async function downloadChart() {
+    const filename = pngFilename();
     try {
-      downloadBtn.disabled = true;
-      showToast("Downloading PNG to your device…");
-      const canvas = await chartToCanvas();
-      const blob = await canvasToPngBlob(canvas);
-      if (!blob.size) throw new Error("Empty image");
+      // Fast path: PNG already prepared — download in this click gesture
+      if (exportBlob) {
+        triggerFileDownload(exportBlob, filename);
+        showToast(`Downloading to your device… (${APP_BUILD})`);
+        // Refresh cache in the background for the next tap
+        queueExportRefresh();
+        return;
+      }
 
-      const stamp = new Date().toISOString().slice(0, 10);
-      const filename = `ess-claims-org-chart-${stamp}.png`;
-      await downloadBlobToDevice(blob, filename);
-      showToast("Download started — check your Downloads folder");
+      downloadBtn.disabled = true;
+      showToast("Preparing PNG…");
+      // Warm cache on pointerdown usually avoids this path
+      const blob = await ensureExportBlob();
+      triggerFileDownload(blob, filename);
+      showToast(`Downloading to your device… (${APP_BUILD})`);
+      queueExportRefresh();
     } catch (err) {
       console.error(err);
-      showToast("Download failed");
+      showToast("Download failed — try again");
     } finally {
       downloadBtn.disabled = false;
     }
@@ -306,6 +340,13 @@
     applyTheme(current === "dark" ? "light" : "dark");
   });
 
+  // Start preparing the PNG as soon as the user touches the button so the
+  // actual click can download synchronously (required on mobile Safari).
+  downloadBtn.addEventListener("pointerdown", () => {
+    if (!exportBlob && !exportBlobPromise) {
+      queueExportRefresh({ clear: false });
+    }
+  });
   downloadBtn.addEventListener("click", downloadChart);
   copyBtn.addEventListener("click", copyChart);
 
