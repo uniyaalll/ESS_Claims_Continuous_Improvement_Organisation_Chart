@@ -211,72 +211,73 @@
     });
   }
 
-  async function savePngBlob(blob, filename) {
-    // Chromium File System Access API — reliable after async click handlers
-    if (typeof window.showSaveFilePicker === "function") {
-      const handle = await window.showSaveFilePicker({
-        suggestedName: filename,
-        types: [
-          {
-            description: "PNG image",
-            accept: { "image/png": [".png"] },
-          },
-        ],
-      });
-      const writable = await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      return "saved";
+  function isLikelyIos() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+
+  /**
+   * Save a PNG onto the user's device (Downloads / Files).
+   * Avoids showSaveFilePicker — that dialog is tied to the website origin
+   * and looks like the file is being saved "on" github.io.
+   */
+  function downloadBlobToDevice(blob, filename) {
+    // Legacy Edge
+    if (navigator.msSaveOrOpenBlob) {
+      navigator.msSaveOrOpenBlob(blob, filename);
+      return "downloads";
     }
 
-    // Anchor + object URL (more reliable than huge data: URLs)
     const url = URL.createObjectURL(blob);
+
+    // iOS Safari often ignores the download attribute; open the image
+    // so the user can tap Share → Save Image / Save to Files.
+    if (isLikelyIos()) {
+      const opened = window.open(url, "_blank");
+      if (!opened) {
+        // Popup blocked: use a temporary link with target=_blank
+        const link = document.createElement("a");
+        link.href = url;
+        link.target = "_blank";
+        link.rel = "noopener";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      return "ios-open";
+    }
+
     const link = document.createElement("a");
     link.href = url;
     link.download = filename;
     link.rel = "noopener";
-    link.style.display = "none";
+    link.style.position = "fixed";
+    link.style.left = "-9999px";
     document.body.appendChild(link);
     link.click();
     link.remove();
-    // Keep the blob alive long enough for the browser to start the download
-    setTimeout(() => URL.revokeObjectURL(url), 10_000);
-    return "triggered";
+    // Keep the blob URL alive until the browser finishes fetching it
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    return "downloads";
   }
 
   async function downloadChart() {
     try {
       downloadBtn.disabled = true;
-      showToast("Preparing PNG…");
+      showToast("Preparing PNG for your device…");
       const canvas = await chartToCanvas();
       const blob = await canvasToPngBlob(canvas);
       if (!blob.size) throw new Error("Empty image");
 
       const stamp = new Date().toISOString().slice(0, 10);
       const filename = `ess-claims-org-chart-${stamp}.png`;
+      const mode = downloadBlobToDevice(blob, filename);
 
-      try {
-        const mode = await savePngBlob(blob, filename);
-        showToast(mode === "saved" ? "PNG saved" : "PNG download started");
-      } catch (err) {
-        if (err && err.name === "AbortError") {
-          showToast("Download cancelled");
-          return;
-        }
-        // Last resort: open the image so the user can save it manually
-        const url = URL.createObjectURL(blob);
-        const opened = window.open(url, "_blank");
-        if (!opened) {
-          // Popup blocked — navigate current tab as final fallback
-          const link = document.createElement("a");
-          link.href = url;
-          link.target = "_blank";
-          link.rel = "noopener";
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-        }
-        showToast("Opened PNG — use Save image if needed");
+      if (mode === "ios-open") {
+        showToast("Image opened — tap Share → Save to Files");
+      } else {
+        showToast("Saving to your device Downloads folder");
       }
     } catch (err) {
       console.error(err);
