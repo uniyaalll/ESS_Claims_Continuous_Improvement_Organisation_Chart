@@ -1,69 +1,222 @@
 {
-  "title": "ESS Claims \u2014 Continuous Improvement",
-  "subtitle": "Organisation Chart",
+  "title": "Continuous Improvement Initiatives",
+  "subtitle": "ESS Claims Organization Chart",
+  "footer": "Job Rotation \u2014 Meghana Gowda",
+  "layout": "pillars",
+  "pillars": [
+    {
+      "id": "system",
+      "label": "System Enhancement",
+      "tone": "green"
+    },
+    {
+      "id": "process",
+      "label": "Process Improvement",
+      "tone": "purple"
+    },
+    {
+      "id": "automation",
+      "label": "Automation",
+      "tone": "orange"
+    }
+  ],
   "people": [
     {
       "id": "1",
-      "name": "Alex Morgan",
+      "name": "Paulina Strozyk-Kozlowska",
       "role": "Head of ESS Claims",
       "manager_id": "",
-      "team": "ESS Claims",
+      "team": "Leadership",
+      "pillar": "leadership",
       "photo": ""
     },
     {
       "id": "2",
-      "name": "Jordan Lee",
-      "role": "Continuous Improvement Lead",
+      "name": "Rebecca Newcastle",
+      "role": "ESS Claims CI Lead",
       "manager_id": "1",
-      "team": "Continuous Improvement",
+      "team": "Leadership",
+      "pillar": "leadership",
       "photo": ""
     },
     {
       "id": "3",
-      "name": "Sam Rivera",
-      "role": "Operations Excellence Manager",
-      "manager_id": "1",
-      "team": "Operations",
+      "name": "Deekshith Kiran",
+      "role": "Pillar Co-Lead",
+      "manager_id": "2",
+      "team": "System Enhancement",
+      "pillar": "system",
       "photo": ""
     },
     {
       "id": "4",
-      "name": "Casey Nguyen",
-      "role": "Process Analyst",
+      "name": "Michele Panek",
+      "role": "Pillar Lead",
       "manager_id": "2",
-      "team": "Continuous Improvement",
+      "team": "System Enhancement",
+      "pillar": "system",
       "photo": ""
     },
     {
       "id": "5",
-      "name": "Riley Patel",
-      "role": "Process Analyst",
+      "name": "Vandana Taneja",
+      "role": "Pillar Lead",
       "manager_id": "2",
-      "team": "Continuous Improvement",
+      "team": "Process Improvement",
+      "pillar": "process",
       "photo": ""
     },
     {
       "id": "6",
-      "name": "Taylor Brooks",
-      "role": "Change Manager",
+      "name": "Smriti Kandari",
+      "role": "Pillar Lead",
       "manager_id": "2",
-      "team": "Continuous Improvement",
+      "team": "Automation",
+      "pillar": "automation",
       "photo": ""
     },
     {
       "id": "7",
-      "name": "Morgan Ellis",
-      "role": "Quality Lead",
-      "manager_id": "3",
-      "team": "Operations",
+      "name": "Anna Rzepka",
+      "role": "System Enhancement",
+      "manager_id": "4",
+      "team": "System Enhancement",
+      "pillar": "system",
       "photo": ""
     },
     {
       "id": "8",
-      "name": "Jamie Chen",
-      "role": "Reporting Analyst",
-      "manager_id": "3",
-      "team": "Operations",
+      "name": "Sudha S.",
+      "role": "System Enhancement",
+      "manager_id": "4",
+      "team": "System Enhancement",
+      "pillar": "system",
+      "photo": ""
+    },
+    {
+      "id": "9",
+      "name": "Pracilla Ullas",
+      "role": "System Enhancement",
+      "manager_id": "4",
+      "team": "System Enhancement",
+      "pillar": "system",
+      "photo": ""
+    },
+    {
+      "id": "10",
+      "name": "Ayushi Choudhary",
+      "role": "System Enhancement",
+      "manager_id": "4",
+      "team": "System Enhancement",
+      "pillar": "system",
+      "photo": ""
+    },
+    {
+      "id": "11",
+      "name": "Oktawia Marynowska",
+      "role": "System Enhancement",
+      "manager_id": "4",
+      "team": "System Enhancement",
+      "pillar": "system",
+      "photo": ""
+    },
+    {
+      "id": "12",
+      "name": "Priyanka Kapoor",
+      "role": "Process Improvement",
+      "manager_id": "5",
+      "team": "Process Improvement",
+      "pillar": "process",
+      "photo": ""
+    },
+    {
+      "id": "13",
+      "name": "Nehal Sharma",
+      "role": "Process Improvement",
+      "manager_id": "5",
+      "team": "Process Improvement",
+      "pillar": "process",
+      "photo": ""
+    },
+    {
+      "id": "14",
+      "name": "Dinesh Sanmugam",
+      "role": "Process Improvement",
+      "manager_id": "5",
+      "team": "Process Improvement",
+      "pillar": "process",
+      "photo": ""
+    },
+    {
+      "id": "15",
+      "name": "Jasno John",
+      "role": "Automation",
+      "manager_id": "6",
+      "team": "Automation",
+      "pillar": "automation",
+      "photo": ""
+    },
+    {
+      "id": "16",
+      "name": "Meghana Gowda",
+      "role": "Automation, BI & Reporting Jr.",
+      "manager_id": "6",
+      "team": "Automation",
+      "pillar": "automation",
+      "photo": ""
+    },
+    {
+      "id": "17",
+      "name": "Deepak M.",
+      "role": "Automation",
+      "manager_id": "6",
+      "team": "Automation",
+      "pillar": "automation",
+      "photo": ""
+    },
+    {
+      "id": "18",
+      "name": "Shivashankar V.",
+      "role": "Automation",
+      "manager_id": "6",
+      "team": "Automation",
+      "pillar": "automation",
+      "photo": ""
+    },
+    {
+      "id": "19",
+      "name": "Anshul Chhabra",
+      "role": "Automation",
+      "manager_id": "6",
+      "team": "Automation",
+      "pillar": "automation",
+      "photo": ""
+    },
+    {
+      "id": "20",
+      "name": "Mehak Verma",
+      "role": "Automation",
+      "manager_id": "6",
+      "team": "Automation",
+      "pillar": "automation",
+      "photo": ""
+    },
+    {
+      "id": "21",
+      "name": "Dhanalakshmi A.",
+      "role": "Automation",
+      "manager_id": "6",
+      "team": "Automation",
+      "pillar": "automation",
+      "photo": ""
+    },
+    {
+      "id": "22",
+      "name": "Ashutosh Uniyal",
+      "role": "Automation",
+      "manager_id": "6",
+      "team": "Automation",
+      "pillar": "automation",
       "photo": ""
     }
   ]

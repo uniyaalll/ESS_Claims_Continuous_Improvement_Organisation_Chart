@@ -1,39 +1,40 @@
 # ESS Claims — Continuous Improvement Organisation Chart
 
-AXA XL–branded organisation chart hosted on GitHub Pages. Names and reporting lines are driven by an Excel workbook in this repository.
+AXA XL org chart (TRAF-style blocks) hosted on GitHub Pages. Roster and photos are driven by Excel in this repo.
 
 ## Live chart
 
-**https://uniyaalll.github.io/ESS_Claims_Continuous_Improvement_Organisation_Chart/**
+**https://uniyaalll.github.io/ESS_Claims_Continuous_Improvement_Organisation_Chart/?v=20261029f**
 
-> After the first push to `main`, enable **Settings → Pages → Source: GitHub Actions** if Pages is not already active. The workflow then publishes the site automatically.
+## Modes
 
-## Features
+- **Light** — white / black TRAF blocks  
+- **Color** — pillar gradients (green / purple / orange) like the official chart  
+- **Dark** — pure black with AXA blue accents  
 
-- Clean, minimal AXA XL look (Torch Red / Navy / Porcelain)
-- Light / dark mode toggle
-- Download chart as PNG
-- Copy chart as an image to the clipboard
-- Fixed on-screen frame — the tree scales to fit (no page scroll)
-- Data sourced from Excel; chart updates when the workbook is changed and pushed
+Also: Download + Copy as **1920×1080** PowerPoint slide PNG.
 
-## Update the chart
+## Update names / structure
 
-1. Open [`data/org-chart.xlsx`](data/org-chart.xlsx)
-2. Edit the **Org Chart** sheet:
+Edit [`data/org-chart.xlsx`](data/org-chart.xlsx):
 
-   | Column       | Meaning                                      |
-   |-------------|-----------------------------------------------|
-   | `id`        | Unique id for this person                     |
-   | `name`      | Name shown on the card                        |
-   | `role`      | Job title                                     |
-   | `manager_id`| `id` of their manager (blank = top of chart)  |
-   | `team`      | Optional team / department label              |
+| Column | Meaning |
+|--------|---------|
+| `id` | Unique id |
+| `name` | Display name |
+| `role` | Job title |
+| `manager_id` | Manager’s `id` (blank = root) |
+| `team` | Team label |
+| `pillar` | `leadership` \| `system` \| `process` \| `automation` |
+| `photo` | Filename in `assets/photos/` **or** image URL |
 
-3. Save, commit, and push to `main`
-4. GitHub Actions regenerates `data/org-chart.json` and redeploys Pages
+## Add profile photos
 
-Locally you can regenerate JSON without pushing:
+1. Put files in [`assets/photos/`](assets/photos/) (e.g. `rebecca-newcastle.jpg`)
+2. In Excel **photo** column, enter that filename (or a full `https://…` URL)
+3. Commit + push — Pages redeploys with photos in the square placeholders
+
+Leave `photo` blank to keep the square placeholder.
 
 ```bash
 pip install openpyxl
@@ -42,26 +43,8 @@ python scripts/generate_org_data.py
 
 ## Local preview
 
-Serve the repo root over HTTP (required for `fetch` of the JSON):
-
 ```bash
 python3 -m http.server 8080
 ```
 
-Then open http://localhost:8080
-
-## Project layout
-
-```
-index.html              # Chart page
-css/styles.css          # AXA XL theme + light/dark
-js/app.js               # Tree render, fit-to-frame, copy/download
-data/org-chart.xlsx     # Source of truth (edit this)
-data/org-chart.json     # Generated for the web app
-scripts/generate_org_data.py
-.github/workflows/pages.yml
-```
-
-## Brand notes
-
-Colours follow AXA XL: Torch Red `#FF1721`, Navy `#00008F`, Porcelain `#FBFCFC`. Typography uses Source Sans 3.
+Open http://localhost:8080

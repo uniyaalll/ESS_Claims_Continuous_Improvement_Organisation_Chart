@@ -1,8 +1,9 @@
 (() => {
   const THEME_KEY = "axa-org-theme";
-  // Standard PowerPoint widescreen slide pixel size (16:9)
+  const THEMES = ["light", "color", "dark"];
   const PPT_WIDTH = 1920;
   const PPT_HEIGHT = 1080;
+
   const chartViewport = document.getElementById("chart-viewport");
   const chartScaler = document.getElementById("chart-scaler");
   const pptSlide = document.getElementById("ppt-slide");
@@ -10,16 +11,23 @@
   const statusEl = document.getElementById("status");
   const titleEl = document.getElementById("chart-title");
   const subtitleEl = document.getElementById("chart-subtitle");
+  const footerEl = document.getElementById("slide-footer-note");
   const toastEl = document.getElementById("toast");
-  const themeToggle = document.getElementById("theme-toggle");
   const downloadBtn = document.getElementById("download-btn");
   const copyBtn = document.getElementById("copy-btn");
+  const modeButtons = Array.from(document.querySelectorAll("[data-mode]"));
 
   let toastTimer = null;
   let fitRaf = 0;
   let exportBlob = null;
   let exportBlobPromise = null;
-  const APP_BUILD = "20261029e";
+  const APP_BUILD = "20261029f";
+
+  const DEFAULT_PILLARS = [
+    { id: "system", label: "System Enhancement", tone: "green" },
+    { id: "process", label: "Process Improvement", tone: "purple" },
+    { id: "automation", label: "Automation", tone: "orange" },
+  ];
 
   function showToast(message) {
     toastEl.textContent = message;
@@ -30,48 +38,29 @@
 
   function preferredTheme() {
     const saved = localStorage.getItem(THEME_KEY);
-    if (saved === "light" || saved === "dark") return saved;
+    if (THEMES.includes(saved)) return saved;
     return window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
   }
 
   function applyTheme(theme) {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem(THEME_KEY, theme);
-    const isDark = theme === "dark";
-    themeToggle.setAttribute("aria-pressed", String(isDark));
-    themeToggle.querySelector(".label").textContent = isDark
-      ? "Light mode"
-      : "Dark mode";
-    // Theme affects export colors — refresh only once a chart exists
+    const next = THEMES.includes(theme) ? theme : "light";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem(THEME_KEY, next);
+    modeButtons.forEach((btn) => {
+      btn.classList.toggle("is-active", btn.getAttribute("data-mode") === next);
+    });
     if (orgRoot.querySelector(".org-tree")) {
       queueExportRefresh();
     }
   }
 
-  function buildTree(people) {
-    const byId = new Map();
-    people.forEach((p) => {
-      byId.set(String(p.id), { ...p, children: [] });
-    });
-
-    const roots = [];
-    byId.forEach((node) => {
-      const managerId = String(node.manager_id || "").trim();
-      if (managerId && byId.has(managerId)) {
-        byId.get(managerId).children.push(node);
-      } else {
-        roots.push(node);
-      }
-    });
-
-    const sortNodes = (nodes) => {
-      nodes.sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
-      nodes.forEach((n) => sortNodes(n.children));
-    };
-    sortNodes(roots);
-    return roots;
+  function resolvePhotoSrc(photo) {
+    const value = String(photo || "").trim();
+    if (!value) return "";
+    if (/^(https?:|data:|blob:|\.\/|\/)/i.test(value)) return value;
+    return `./assets/photos/${value.replace(/^\/+/, "")}`;
   }
 
   function personInitials(name) {
@@ -85,28 +74,6 @@
       .map((p) => p.charAt(0))
       .join("")
       .toUpperCase();
-  }
-
-  function createAvatar(person) {
-    const avatar = document.createElement("div");
-    avatar.className = "avatar";
-    avatar.setAttribute("aria-hidden", "true");
-
-    const photo = person.photo || person.image || person.avatar || "";
-    if (photo) {
-      const img = document.createElement("img");
-      img.src = photo;
-      img.alt = "";
-      img.loading = "lazy";
-      img.onerror = () => {
-        img.remove();
-        avatar.appendChild(placeholderMark(person.name));
-      };
-      avatar.appendChild(img);
-    } else {
-      avatar.appendChild(placeholderMark(person.name));
-    }
-    return avatar;
   }
 
   function placeholderMark(name) {
@@ -124,9 +91,33 @@
     return wrap;
   }
 
-  function createCard(person, isRoot) {
+  function createAvatar(person) {
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
+    avatar.setAttribute("aria-hidden", "true");
+
+    const src = resolvePhotoSrc(person.photo || person.image || person.avatar || "");
+    if (src) {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = "";
+      img.loading = "lazy";
+      img.onerror = () => {
+        img.remove();
+        avatar.appendChild(placeholderMark(person.name));
+      };
+      avatar.appendChild(img);
+    } else {
+      avatar.appendChild(placeholderMark(person.name));
+    }
+    return avatar;
+  }
+
+  function createCard(person, options = {}) {
     const card = document.createElement("article");
-    card.className = `card${isRoot ? " root" : ""}`;
+    const pillar = String(person.pillar || "leadership").toLowerCase();
+    card.className = `card${options.root ? " root" : ""}`;
+    card.dataset.pillar = pillar;
     card.setAttribute("aria-label", `${person.name}, ${person.role || ""}`);
 
     const meta = document.createElement("div");
@@ -142,7 +133,7 @@
 
     meta.append(name, role);
 
-    if (person.team) {
+    if (options.showTeam && person.team) {
       const team = document.createElement("p");
       team.className = "team";
       team.textContent = person.team;
@@ -153,20 +144,120 @@
     return card;
   }
 
+  function sortById(list) {
+    return [...list].sort((a, b) =>
+      String(a.id).localeCompare(String(b.id), undefined, { numeric: true })
+    );
+  }
+
+  function isLeadRole(role) {
+    const r = String(role || "").toLowerCase();
+    return r.includes("pillar lead") || r.includes("pillar co-lead") || r.includes("co-lead");
+  }
+
+  function renderPillarsLayout(data, people) {
+    const pillars = Array.isArray(data.pillars) && data.pillars.length
+      ? data.pillars
+      : DEFAULT_PILLARS;
+
+    const leaders = sortById(
+      people.filter((p) => String(p.pillar || "").toLowerCase() === "leadership")
+    );
+
+    const tree = document.createElement("div");
+    tree.className = "org-tree pillars-layout";
+    tree.setAttribute("role", "tree");
+
+    const leadersEl = document.createElement("div");
+    leadersEl.className = "leaders";
+    leaders.forEach((person, index) => {
+      leadersEl.appendChild(createCard(person, { root: index === 0, showTeam: true }));
+    });
+    tree.appendChild(leadersEl);
+
+    const row = document.createElement("div");
+    row.className = "pillars-row";
+
+    pillars.forEach((pillar) => {
+      const pid = String(pillar.id || "").toLowerCase();
+      const members = sortById(
+        people.filter((p) => String(p.pillar || "").toLowerCase() === pid)
+      );
+      const leads = members.filter((p) => isLeadRole(p.role));
+      const team = members.filter((p) => !isLeadRole(p.role));
+
+      const col = document.createElement("section");
+      col.className = "pillar";
+      col.dataset.pillar = pid;
+
+      const banner = document.createElement("div");
+      banner.className = "pillar-banner";
+      banner.textContent = pillar.label || pid;
+      col.appendChild(banner);
+
+      const leadsEl = document.createElement("div");
+      leadsEl.className = "pillar-leads";
+      leads.forEach((person) => {
+        leadsEl.appendChild(createCard(person, { showTeam: false }));
+      });
+      col.appendChild(leadsEl);
+
+      const teamEl = document.createElement("div");
+      teamEl.className = "pillar-team";
+      team.forEach((person) => {
+        teamEl.appendChild(createCard(person, { showTeam: false }));
+      });
+      col.appendChild(teamEl);
+
+      row.appendChild(col);
+    });
+
+    tree.appendChild(row);
+    return tree;
+  }
+
+  function buildTree(people) {
+    const byId = new Map();
+    people.forEach((p) => byId.set(String(p.id), { ...p, children: [] }));
+    const roots = [];
+    byId.forEach((node) => {
+      const managerId = String(node.manager_id || "").trim();
+      if (managerId && byId.has(managerId)) byId.get(managerId).children.push(node);
+      else roots.push(node);
+    });
+    const sortNodes = (nodes) => {
+      nodes.sort((a, b) =>
+        String(a.id).localeCompare(String(b.id), undefined, { numeric: true })
+      );
+      nodes.forEach((n) => sortNodes(n.children));
+    };
+    sortNodes(roots);
+    return roots;
+  }
+
   function renderNode(person, isRoot = false) {
     const node = document.createElement("div");
     node.className = "node";
-    node.appendChild(createCard(person, isRoot));
-
+    node.appendChild(createCard(person, { root: isRoot, showTeam: true }));
     if (person.children.length) {
       const children = document.createElement("div");
       children.className = `children${person.children.length === 1 ? " single" : ""}`;
-      person.children.forEach((child) => {
-        children.appendChild(renderNode(child, false));
-      });
+      person.children.forEach((child) => children.appendChild(renderNode(child, false)));
       node.appendChild(children);
     }
     return node;
+  }
+
+  function renderClassicTree(people) {
+    const roots = buildTree(people);
+    const tree = document.createElement("div");
+    tree.className = "org-tree";
+    tree.setAttribute("role", "tree");
+    const level = document.createElement("div");
+    level.className = "level";
+    roots.forEach((root) => level.appendChild(renderNode(root, true)));
+    tree.appendChild(level);
+    return tree;
   }
 
   function fitChart() {
@@ -174,16 +265,13 @@
     fitRaf = requestAnimationFrame(() => {
       const tree = orgRoot.querySelector(".org-tree");
       if (!tree || !chartViewport) return;
-
       chartScaler.style.transform = "scale(1)";
-
       const pad = 8;
       const availW = Math.max(chartViewport.clientWidth - pad * 2, 40);
       const availH = Math.max(chartViewport.clientHeight - pad * 2, 40);
       const treeW = tree.scrollWidth;
       const treeH = tree.scrollHeight;
       if (!treeW || !treeH) return;
-
       const scale = Math.min(availW / treeW, availH / treeH, 1);
       chartScaler.style.transform = `scale(${scale})`;
     });
@@ -207,6 +295,9 @@
 
     if (data.title) titleEl.textContent = data.title;
     if (data.subtitle) subtitleEl.textContent = data.subtitle;
+    if (footerEl) {
+      footerEl.textContent = data.footer || "";
+    }
 
     const people = Array.isArray(data.people) ? data.people : [];
     if (!people.length) {
@@ -214,17 +305,12 @@
       return;
     }
 
-    const roots = buildTree(people);
-    const tree = document.createElement("div");
-    tree.className = "org-tree";
-    tree.setAttribute("role", "tree");
+    const tree =
+      data.layout === "pillars"
+        ? renderPillarsLayout(data, people)
+        : renderClassicTree(people);
 
-    const level = document.createElement("div");
-    level.className = "level";
-    roots.forEach((root) => level.appendChild(renderNode(root, true)));
-    tree.appendChild(level);
     orgRoot.appendChild(tree);
-
     fitChart();
     queueExportRefresh();
   }
@@ -242,10 +328,13 @@
     }
   }
 
-  /**
-   * Capture the full 16:9 slide (not just the tree) and rasterize to an
-   * exact PowerPoint widescreen canvas: 1920×1080.
-   */
+  function exportBackground() {
+    const theme = document.documentElement.getAttribute("data-theme");
+    if (theme === "dark") return "#0a0a0a";
+    if (theme === "color") return "#f7f7f7";
+    return "#ffffff";
+  }
+
   async function slideToCanvas() {
     if (typeof html2canvas !== "function") {
       throw new Error("html2canvas is not available");
@@ -253,18 +342,14 @@
     if (!pptSlide) throw new Error("Slide frame is missing");
     if (!orgRoot.querySelector(".org-tree")) throw new Error("Chart is not ready");
 
-    // Keep the on-screen fitted scale so export matches what users see
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    const bg = isDark ? "#12122a" : "#ffffff";
+    const bg = exportBackground();
     const slideW = pptSlide.offsetWidth || pptSlide.getBoundingClientRect().width;
     const slideH = pptSlide.offsetHeight || pptSlide.getBoundingClientRect().height;
     if (!slideW || !slideH) throw new Error("Slide has no size");
 
-    // Render at high DPI so the downscale to 1920×1080 stays sharp
     const captureScale = Math.max(PPT_WIDTH / slideW, 2);
-
     const captured = await html2canvas(pptSlide, {
       backgroundColor: bg,
       scale: captureScale,
@@ -296,19 +381,12 @@
     });
   }
 
-  /**
-   * Synchronous file download inside a user-gesture handler.
-   * Mobile Safari only honors `download` when this runs in the click turn
-   * (not after an await) — so we keep a pre-rendered PNG blob ready.
-   */
   function triggerFileDownload(blob, filename) {
     if (!blob) throw new Error("PNG not ready");
-
     if (navigator.msSaveOrOpenBlob) {
       navigator.msSaveOrOpenBlob(blob, filename);
       return;
     }
-
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -364,19 +442,17 @@
   async function downloadChart() {
     const filename = pngFilename();
     try {
-      // Fast path: PNG already prepared — download in this click gesture
       if (exportBlob) {
         triggerFileDownload(exportBlob, filename);
-        showToast(`Slide PNG downloading (1920×1080)…`);
+        showToast("Slide PNG downloading (1920×1080)…");
         queueExportRefresh();
         return;
       }
-
       downloadBtn.disabled = true;
       showToast("Preparing slide PNG…");
       const blob = await ensureExportBlob();
       triggerFileDownload(blob, filename);
-      showToast(`Slide PNG downloading (1920×1080)…`);
+      showToast("Slide PNG downloading (1920×1080)…");
       queueExportRefresh();
     } catch (err) {
       console.error(err);
@@ -390,7 +466,6 @@
     try {
       copyBtn.disabled = true;
       const blob = exportBlob || (await ensureExportBlob());
-
       if (navigator.clipboard && window.ClipboardItem) {
         await navigator.clipboard.write([
           new ClipboardItem({ "image/png": blob }),
@@ -409,13 +484,10 @@
     }
   }
 
-  themeToggle.addEventListener("click", () => {
-    const current = document.documentElement.getAttribute("data-theme");
-    applyTheme(current === "dark" ? "light" : "dark");
+  modeButtons.forEach((btn) => {
+    btn.addEventListener("click", () => applyTheme(btn.getAttribute("data-mode")));
   });
 
-  // Warm the export as soon as the user presses Download/Copy so mobile
-  // Safari can still honor a synchronous download on click.
   function warmExportOnPress() {
     if (!exportBlob && !exportBlobPromise) {
       queueExportRefresh({ clear: false });

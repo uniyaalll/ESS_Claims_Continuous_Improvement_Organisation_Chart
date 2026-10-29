@@ -1,62 +1,92 @@
 :root {
-  /* AXA */
   --axa-blue: #00008f;
-  --axa-blue-deep: #00006d;
-  --axa-blue-mid: #1a1a9e;
   --axa-red: #ff1721;
 
-  /* TRAF-inspired light: white blocks, hairline rules */
-  --surface: #f2f2f2;
+  /* Light (default) */
+  --surface: #ececec;
   --surface-elevated: #ffffff;
   --ink: #111111;
-  --ink-muted: #555555;
-  --line: #bdbdbd;
-  --line-strong: #111111;
+  --ink-muted: #5a5a5a;
+  --line: #c0c0c0;
+  --line-strong: #222222;
   --card-bg: #ffffff;
-  --card-border: #111111;
-  --avatar-bg: #e8e8e8;
-  --avatar-ink: #111111;
+  --card-border: #1a1a1a;
+  --avatar-bg: #e4e4e4;
+  --avatar-ink: #222222;
   --header-bg: #ffffff;
   --btn-bg: #ffffff;
   --btn-border: #111111;
-  --btn-hover: #f0f0f0;
+  --btn-hover: #f3f3f3;
   --btn-primary-bg: #111111;
   --btn-primary-ink: #ffffff;
   --toast-bg: #111111;
   --toast-fg: #ffffff;
   --slide-border: #111111;
   --focus: #00008f;
+  --dot-grid: rgba(0, 0, 0, 0.12);
+
+  --pillar-system: #1faa6c;
+  --pillar-system-2: #7fd9a8;
+  --pillar-process: #6b4cff;
+  --pillar-process-2: #d45cff;
+  --pillar-automation: #ff7a18;
+  --pillar-automation-2: #e23b2f;
 
   --ppt-ratio: 16 / 9;
   --font: Arial, "Helvetica Neue", Helvetica, sans-serif;
-  --card-w: 248px;
-  --card-root-w: 268px;
-  --avatar: 52px;
+  --card-w: 236px;
+  --avatar: 56px;
   --radius: 0;
 }
 
+/* Black dark mode + AXA blue accents */
 [data-theme="dark"] {
-  /* TRAF blocks on AXA blue */
-  --surface: #00006d;
-  --surface-elevated: #00008f;
-  --ink: #ffffff;
-  --ink-muted: #c8c8ef;
-  --line: rgba(255, 255, 255, 0.45);
-  --line-strong: #ffffff;
-  --card-bg: #0d0d9c;
-  --card-border: rgba(255, 255, 255, 0.85);
-  --avatar-bg: #1f1fad;
-  --avatar-ink: #ffffff;
-  --header-bg: #00008f;
-  --btn-bg: #00008f;
+  --surface: #000000;
+  --surface-elevated: #0a0a0a;
+  --ink: #f5f5f5;
+  --ink-muted: #a8a8a8;
+  --line: #3a3a3a;
+  --line-strong: #d0d0d0;
+  --card-bg: #121212;
+  --card-border: #e8e8e8;
+  --avatar-bg: #1c1c1c;
+  --avatar-ink: #f0f0f0;
+  --header-bg: #000000;
+  --btn-bg: #000000;
   --btn-border: #ffffff;
-  --btn-hover: #1a1a9e;
-  --btn-primary-bg: #ffffff;
-  --btn-primary-ink: #00008f;
-  --toast-bg: #ffffff;
-  --toast-fg: #00008f;
+  --btn-hover: #1a1a1a;
+  --btn-primary-bg: #00008f;
+  --btn-primary-ink: #ffffff;
+  --toast-bg: #00008f;
+  --toast-fg: #ffffff;
   --slide-border: #ffffff;
-  --focus: #ffffff;
+  --focus: #4d4dff;
+  --dot-grid: rgba(255, 255, 255, 0.14);
+}
+
+/* Color mode — pillar gradients like the official chart */
+[data-theme="color"] {
+  --surface: #e9e9e9;
+  --surface-elevated: #f7f7f7;
+  --ink: #0b1a4a;
+  --ink-muted: #5a657a;
+  --line: #c5c5c5;
+  --line-strong: #4a5568;
+  --card-bg: #ffffff;
+  --card-border: #00008f;
+  --avatar-bg: #edf0f7;
+  --avatar-ink: #00008f;
+  --header-bg: #ffffff;
+  --btn-bg: #ffffff;
+  --btn-border: #00008f;
+  --btn-hover: #eef1fb;
+  --btn-primary-bg: #00008f;
+  --btn-primary-ink: #ffffff;
+  --toast-bg: #00008f;
+  --toast-fg: #ffffff;
+  --slide-border: #00008f;
+  --focus: #00008f;
+  --dot-grid: rgba(0, 0, 143, 0.12);
 }
 
 *,
@@ -85,13 +115,12 @@ body {
   grid-template-rows: auto minmax(0, 1fr);
 }
 
-/* —— Top bar: sharp TRAF block —— */
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.65rem 1rem;
+  padding: 0.6rem 1rem;
   background: var(--header-bg);
   border-bottom: 1px solid var(--slide-border);
   z-index: 2;
@@ -106,22 +135,43 @@ body {
 
 .topbar-kicker {
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .topbar-hint {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--ink-muted);
-  letter-spacing: 0.02em;
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.mode-group {
+  display: inline-flex;
+  border: 1px solid var(--btn-border);
+}
+
+.mode-group .btn {
+  border: none;
+  border-right: 1px solid var(--btn-border);
+  border-radius: 0;
+}
+
+.mode-group .btn:last-child {
+  border-right: none;
+}
+
+.mode-group .btn.is-active {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-ink);
 }
 
 .btn {
@@ -131,17 +181,16 @@ body {
   background: var(--btn-bg);
   color: var(--ink);
   font-family: var(--font);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   line-height: 1;
-  padding: 0.55rem 0.75rem;
+  padding: 0.52rem 0.7rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  transition: background 0.15s ease, color 0.15s ease;
+  gap: 0.35rem;
 }
 
 .btn:hover {
@@ -159,21 +208,14 @@ body {
   color: var(--btn-primary-ink);
 }
 
-.btn-primary:hover {
-  filter: brightness(0.95);
-}
-
 .btn svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
 }
 
-/* —— Stage / 16:9 slide —— */
 .stage {
-  position: relative;
   min-height: 0;
-  padding: 0.75rem 1rem 1rem;
+  padding: 0.7rem 1rem 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -190,8 +232,8 @@ body {
 
 .ppt-slide {
   aspect-ratio: var(--ppt-ratio);
-  width: min(100%, calc((100dvh - 5.25rem) * 16 / 9));
-  max-height: calc(100dvh - 5.25rem);
+  width: min(100%, calc((100dvh - 5.1rem) * 16 / 9));
+  max-height: calc(100dvh - 5.1rem);
   height: auto;
   border: 1px solid var(--slide-border);
   border-radius: var(--radius);
@@ -199,20 +241,59 @@ body {
   overflow: hidden;
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
 .slide-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.85rem;
-  padding: 0.65rem 0.9rem;
+  padding: 0.55rem 0.85rem;
   border-bottom: 1px solid var(--slide-border);
-  background: var(--surface-elevated);
+}
+
+.slide-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.slide-mark {
+  width: 10px;
+  height: 28px;
+  background: var(--axa-red);
+  transform: skewX(-18deg);
+  flex-shrink: 0;
+}
+
+[data-theme="color"] .slide-mark {
+  background: linear-gradient(180deg, var(--axa-red), #ff7a18);
+}
+
+.slide-titles h1 {
+  margin: 0;
+  font-size: clamp(0.82rem, 1.55vw, 1.15rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+
+[data-theme="color"] .slide-titles h1 {
+  color: var(--axa-blue);
+}
+
+.slide-titles p {
+  margin: 0.1rem 0 0;
+  font-size: clamp(0.62rem, 1vw, 0.76rem);
+  color: var(--ink-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .slide-logo {
-  height: 26px;
+  height: 24px;
   width: auto;
   display: block;
   flex-shrink: 0;
@@ -220,29 +301,6 @@ body {
 
 [data-theme="dark"] .slide-logo {
   filter: brightness(0) invert(1);
-}
-
-.slide-titles {
-  min-width: 0;
-}
-
-.slide-titles h1 {
-  margin: 0;
-  font-size: clamp(0.85rem, 1.6vw, 1.1rem);
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-}
-
-.slide-titles p {
-  margin: 0.12rem 0 0;
-  font-size: clamp(0.65rem, 1.1vw, 0.78rem);
-  color: var(--ink-muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .chart-viewport {
@@ -253,9 +311,8 @@ body {
   justify-content: center;
   overflow: hidden;
   background:
-    radial-gradient(circle, var(--line) 0.6px, transparent 0.7px) 0 0 / 14px 14px,
+    radial-gradient(circle, var(--dot-grid) 0.7px, transparent 0.8px) 0 0 / 12px 12px,
     var(--surface-elevated);
-  background-size: 14px 14px, auto;
 }
 
 .chart-scaler {
@@ -263,65 +320,192 @@ body {
   will-change: transform;
 }
 
+.slide-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0.85rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.62rem;
+  color: var(--ink-muted);
+  letter-spacing: 0.03em;
+}
+
 .org-tree {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1.35rem 1.5rem;
+  padding: 1rem 1.25rem;
   width: max-content;
-  font-family: var(--font);
+  gap: 0.85rem;
 }
 
-.level {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 1.35rem;
-}
-
-.node {
+/* —— Leadership stack —— */
+.leaders {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  gap: 0.65rem;
+  align-self: flex-start;
   position: relative;
 }
 
-/* —— Person block: square avatar + text (TRAF cell) —— */
+.leaders .card + .card::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--avatar) / 2);
+  top: -0.65rem;
+  width: 2px;
+  height: 0.65rem;
+  background-image: linear-gradient(
+    to bottom,
+    var(--line-strong) 0 3px,
+    transparent 3px 7px
+  );
+  background-size: 2px 7px;
+  background-repeat: repeat-y;
+}
+
+.leaders .card {
+  position: relative;
+}
+
+/* —— Pillars row —— */
+.pillars-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.85rem;
+  width: max-content;
+}
+
+.pillar {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-height: 100%;
+}
+
+.pillar-banner {
+  padding: 0.55rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ffffff;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.pillar[data-pillar="system"] .pillar-banner {
+  background: linear-gradient(90deg, var(--pillar-system), var(--pillar-system-2));
+}
+
+.pillar[data-pillar="process"] .pillar-banner {
+  background: linear-gradient(90deg, var(--pillar-process), var(--pillar-process-2));
+}
+
+.pillar[data-pillar="automation"] .pillar-banner {
+  background: linear-gradient(90deg, var(--pillar-automation), var(--pillar-automation-2));
+}
+
+/* In light/dark (non-color) modes, keep banners as sharp blocks */
+[data-theme="light"] .pillar-banner,
+:root:not([data-theme]) .pillar-banner {
+  background: #111111 !important;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .pillar-banner {
+  background: #00008f !important;
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+.pillar-leads {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.pillar-team {
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  padding: 0.45rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+[data-theme="color"] .pillar[data-pillar="system"] .pillar-team {
+  border-color: var(--pillar-system);
+  background: linear-gradient(180deg, rgba(31, 170, 108, 0.08), rgba(255, 255, 255, 0.95));
+}
+
+[data-theme="color"] .pillar[data-pillar="process"] .pillar-team {
+  border-color: var(--pillar-process);
+  background: linear-gradient(180deg, rgba(107, 76, 255, 0.08), rgba(255, 255, 255, 0.95));
+}
+
+[data-theme="color"] .pillar[data-pillar="automation"] .pillar-team {
+  border-color: var(--pillar-automation);
+  background: linear-gradient(180deg, rgba(255, 122, 24, 0.1), rgba(255, 255, 255, 0.95));
+}
+
+[data-theme="color"] .pillar[data-pillar="system"] .card {
+  border-color: var(--pillar-system);
+}
+
+[data-theme="color"] .pillar[data-pillar="process"] .card {
+  border-color: var(--pillar-process);
+}
+
+[data-theme="color"] .pillar[data-pillar="automation"] .card {
+  border-color: var(--pillar-automation);
+}
+
+[data-theme="color"] .card[data-pillar="leadership"] {
+  border-color: var(--axa-blue);
+}
+
+/* —— Person card: SQUARE avatar + text —— */
 .card {
   width: var(--card-w);
-  min-height: 72px;
+  min-height: var(--avatar);
   padding: 0;
   border: 1px solid var(--card-border);
   border-radius: var(--radius);
   background: var(--card-bg);
   display: grid;
   grid-template-columns: var(--avatar) minmax(0, 1fr);
+  align-items: start;
   position: relative;
   z-index: 1;
   font-family: var(--font);
-  box-shadow: none;
 }
 
 .card.root {
-  width: var(--card-root-w);
   border-width: 2px;
 }
 
 .card .avatar {
   width: var(--avatar);
+  height: var(--avatar);
+  min-width: var(--avatar);
   min-height: var(--avatar);
-  height: 100%;
+  max-width: var(--avatar);
+  max-height: var(--avatar);
+  aspect-ratio: 1 / 1;
   background: var(--avatar-bg);
   border-right: 1px solid var(--card-border);
   display: grid;
   place-items: center;
   color: var(--avatar-ink);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   overflow: hidden;
   position: relative;
+  flex-shrink: 0;
 }
 
 .card .avatar img {
@@ -336,35 +520,36 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.2rem;
+  gap: 0.15rem;
   width: 100%;
   height: 100%;
-  padding: 0.25rem;
 }
 
 .card .avatar .ph-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   opacity: 0.7;
 }
 
 .card .avatar .ph-initials {
-  line-height: 1;
-  opacity: 0.9;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .card .meta {
-  padding: 0.55rem 0.65rem;
+  padding: 0.4rem 0.55rem;
   text-align: left;
   min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.15rem;
+  gap: 0.12rem;
+  min-height: var(--avatar);
 }
 
 .card .name {
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
@@ -374,9 +559,13 @@ body {
   text-overflow: ellipsis;
 }
 
+[data-theme="color"] .card .name {
+  color: var(--axa-blue);
+}
+
 .card .role {
   margin: 0;
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 400;
   line-height: 1.25;
   color: var(--ink-muted);
@@ -387,90 +576,18 @@ body {
 }
 
 .card .team {
-  margin: 0.1rem 0 0;
-  font-size: 0.58rem;
+  margin: 0;
+  font-size: 0.55rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink);
-  opacity: 0.75;
+  opacity: 0.7;
 }
 
-/* —— Dotted connectors —— */
-.children {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 1.35rem;
-  padding-top: 2.1rem;
-  position: relative;
-}
-
-/* Vertical stub from parent — dotted pattern survives CSS scale() */
-.node > .children::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 2px;
-  height: 1.05rem;
-  transform: translateX(-50%);
-  background-image: linear-gradient(
-    to bottom,
-    var(--line-strong) 0 3px,
-    transparent 3px 7px
-  );
-  background-size: 2px 7px;
-  background-repeat: repeat-y;
-}
-
-/* Horizontal bar across children */
-.node > .children::after {
-  content: "";
-  position: absolute;
-  top: 1.05rem;
-  left: 0;
-  right: 0;
-  height: 2px;
-  margin-left: calc(var(--card-w) / 2);
-  margin-right: calc(var(--card-w) / 2);
-  background-image: linear-gradient(
-    to right,
-    var(--line-strong) 0 3px,
-    transparent 3px 7px
-  );
-  background-size: 7px 2px;
-  background-repeat: repeat-x;
-}
-
-.node > .children > .node::before {
-  content: "";
-  position: absolute;
-  top: -1.05rem;
-  left: 50%;
-  width: 2px;
-  height: 1.05rem;
-  transform: translateX(-50%);
-  background-image: linear-gradient(
-    to bottom,
-    var(--line-strong) 0 3px,
-    transparent 3px 7px
-  );
-  background-size: 2px 7px;
-  background-repeat: repeat-y;
-}
-
-.node > .children.single::after {
-  display: none;
-}
-
-.node > .children.single > .node::before {
-  height: 2.1rem;
-  top: -2.1rem;
-}
-
-.node > .children.single::before {
-  height: 2.1rem;
+/* Compact cards inside pillar teams */
+.pillar-team .card {
+  width: 100%;
 }
 
 .status {
@@ -480,7 +597,6 @@ body {
   place-items: center;
   color: var(--ink-muted);
   font-size: 0.85rem;
-  font-family: var(--font);
   padding: 2rem;
   text-align: center;
   z-index: 3;
@@ -498,16 +614,16 @@ body {
 
 .toast {
   position: fixed;
-  bottom: 1.15rem;
+  bottom: 1.1rem;
   left: 50%;
   transform: translateX(-50%) translateY(120%);
   background: var(--toast-bg);
   color: var(--toast-fg);
   border: 1px solid var(--slide-border);
   border-radius: var(--radius);
-  padding: 0.6rem 0.9rem;
+  padding: 0.55rem 0.85rem;
   font-family: var(--font);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -524,7 +640,7 @@ body {
 
 @media (max-width: 720px) {
   .topbar {
-    padding: 0.55rem 0.7rem;
+    padding: 0.5rem 0.65rem;
   }
 
   .topbar-hint {
@@ -535,19 +651,7 @@ body {
     display: none;
   }
 
-  .btn {
-    padding: 0.5rem 0.55rem;
-  }
-
   .stage {
     padding: 0.45rem;
-  }
-
-  .slide-header {
-    padding: 0.5rem 0.65rem;
-  }
-
-  .slide-logo {
-    height: 20px;
   }
 }

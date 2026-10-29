@@ -7,23 +7,27 @@
     <title>ESS Claims — Continuous Improvement | AXA XL</title>
     <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <link rel="stylesheet" href="./css/styles.css?v=20261029e" />
+    <link rel="stylesheet" href="./css/styles.css?v=20261029f" />
   </head>
   <body>
     <div class="app">
       <header class="topbar">
         <div class="topbar-label">
           <span class="topbar-kicker">AXA XL · TRAF</span>
-          <span class="topbar-hint">16:9 PowerPoint slide</span>
+          <span class="topbar-hint">16:9 PowerPoint slide · real roster</span>
         </div>
         <div class="actions">
-          <button type="button" class="btn" id="theme-toggle" aria-pressed="false" title="Toggle theme">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M12 3v2M12 19v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M3 12h2M19 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-              <circle cx="12" cy="12" r="4" />
-            </svg>
-            <span class="label">Dark mode</span>
-          </button>
+          <div class="mode-group" role="group" aria-label="Display mode">
+            <button type="button" class="btn" data-mode="light" title="Light mode">
+              <span class="label">Light</span>
+            </button>
+            <button type="button" class="btn" data-mode="color" title="Color mode with pillar gradients">
+              <span class="label">Color</span>
+            </button>
+            <button type="button" class="btn" data-mode="dark" title="Dark mode (black)">
+              <span class="label">Dark</span>
+            </button>
+          </div>
           <button type="button" class="btn" id="copy-btn" title="Copy full slide as image">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <rect x="9" y="9" width="11" height="11" />
@@ -50,6 +54,13 @@
             aria-label="Organisation chart PowerPoint slide, 16 by 9"
           >
             <div class="slide-header">
+              <div class="slide-header-left">
+                <div class="slide-mark" aria-hidden="true"></div>
+                <div class="slide-titles">
+                  <h1 id="chart-title">Continuous Improvement Initiatives</h1>
+                  <p id="chart-subtitle">ESS Claims Organization Chart</p>
+                </div>
+              </div>
               <img
                 src="./assets/axa-xl-logo.png"
                 alt="AXA XL"
@@ -57,16 +68,16 @@
                 height="156"
                 class="slide-logo"
               />
-              <div class="slide-titles">
-                <h1 id="chart-title">ESS Claims — Continuous Improvement</h1>
-                <p id="chart-subtitle">Organisation Chart</p>
-              </div>
             </div>
             <div class="chart-viewport" id="chart-viewport">
               <div class="chart-scaler" id="chart-scaler">
                 <div id="org-root"></div>
               </div>
               <div class="status" id="status">Loading organisation chart…</div>
+            </div>
+            <div class="slide-footer">
+              <span id="slide-footer-note">Job Rotation — Meghana Gowda</span>
+              <span>AXA XL · ESS Claims</span>
             </div>
           </div>
         </div>
@@ -76,6 +87,6 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="./js/app.js?v=20261029e"></script>
+    <script src="./js/app.js?v=20261029f"></script>
   </body>
 </html>
