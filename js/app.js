@@ -21,7 +21,7 @@
   let fitRaf = 0;
   let exportBlob = null;
   let exportBlobPromise = null;
-  const APP_BUILD = "20261029f";
+  const APP_BUILD = "20261029i";
 
   const DEFAULT_PILLARS = [
     { id: "system", label: "System Enhancement", tone: "green" },
@@ -116,7 +116,8 @@
   function createCard(person, options = {}) {
     const card = document.createElement("article");
     const pillar = String(person.pillar || "leadership").toLowerCase();
-    card.className = `card${options.root ? " root" : ""}`;
+    const size = options.size || "default";
+    card.className = `card${options.root ? " root" : ""}${size !== "default" ? ` card-${size}` : ""}`;
     card.dataset.pillar = pillar;
     card.setAttribute("aria-label", `${person.name}, ${person.role || ""}`);
 
@@ -165,15 +166,45 @@
     );
 
     const tree = document.createElement("div");
-    tree.className = "org-tree pillars-layout";
+    tree.className = "org-tree pillars-layout org-board";
     tree.setAttribute("role", "tree");
+
+    const command = document.createElement("header");
+    command.className = "command-bar";
+
+    const leadLabel = document.createElement("div");
+    leadLabel.className = "rail-label";
+    leadLabel.textContent = "Leadership";
+    command.appendChild(leadLabel);
 
     const leadersEl = document.createElement("div");
     leadersEl.className = "leaders";
     leaders.forEach((person, index) => {
-      leadersEl.appendChild(createCard(person, { root: index === 0, showTeam: true }));
+      leadersEl.appendChild(
+        createCard(person, { root: index === 0, showTeam: true, size: "lead" })
+      );
+      if (index < leaders.length - 1) {
+        const arrow = document.createElement("span");
+        arrow.className = "lead-flow";
+        arrow.setAttribute("aria-hidden", "true");
+        leadersEl.appendChild(arrow);
+      }
     });
-    tree.appendChild(leadersEl);
+    command.appendChild(leadersEl);
+
+    const flow = document.createElement("div");
+    flow.className = "flow-ribbons";
+    flow.setAttribute("aria-hidden", "true");
+    flow.innerHTML = `
+      <span class="ribbon ribbon-a"></span>
+      <span class="ribbon ribbon-b"></span>
+      <span class="ribbon ribbon-c"></span>
+    `;
+    command.appendChild(flow);
+    tree.appendChild(command);
+
+    const stage = document.createElement("div");
+    stage.className = "pillars-stage";
 
     const row = document.createElement("div");
     row.className = "pillars-row";
@@ -192,27 +223,34 @@
 
       const banner = document.createElement("div");
       banner.className = "pillar-banner";
-      banner.textContent = pillar.label || pid;
+      const bannerTitle = document.createElement("span");
+      bannerTitle.textContent = pillar.label || pid;
+      const bannerMeta = document.createElement("em");
+      const total = members.length;
+      bannerMeta.textContent = `${total} people`;
+      banner.append(bannerTitle, bannerMeta);
       col.appendChild(banner);
 
-      const leadsEl = document.createElement("div");
-      leadsEl.className = "pillar-leads";
-      leads.forEach((person) => {
-        leadsEl.appendChild(createCard(person, { showTeam: false }));
-      });
-      col.appendChild(leadsEl);
-
       const teamEl = document.createElement("div");
-      teamEl.className = "pillar-team";
+      teamEl.className = "pillar-team pillar-mosaic";
+      teamEl.dataset.count = String(total);
+      teamEl.dataset.leads = String(leads.length);
+
+      leads.forEach((person) => {
+        const card = createCard(person, { showTeam: false, size: "lead" });
+        card.classList.add("is-lead");
+        teamEl.appendChild(card);
+      });
       team.forEach((person) => {
-        teamEl.appendChild(createCard(person, { showTeam: false }));
+        teamEl.appendChild(createCard(person, { showTeam: false, size: "compact" }));
       });
       col.appendChild(teamEl);
 
       row.appendChild(col);
     });
 
-    tree.appendChild(row);
+    stage.appendChild(row);
+    tree.appendChild(stage);
     return tree;
   }
 
@@ -266,13 +304,28 @@
       const tree = orgRoot.querySelector(".org-tree");
       if (!tree || !chartViewport) return;
       chartScaler.style.transform = "scale(1)";
+      const isBoard = tree.classList.contains("org-board");
+      chartViewport.classList.toggle("is-board", isBoard);
+      chartScaler.classList.toggle("is-board", isBoard);
+
+      // Board layout: stretch to fill the slide (no letterboxing)
+      if (isBoard) {
+        tree.style.width = "100%";
+        tree.style.height = "100%";
+        chartScaler.style.transform = "scale(1)";
+        return;
+      }
+
+      tree.style.width = "";
+      tree.style.height = "";
       const pad = 8;
       const availW = Math.max(chartViewport.clientWidth - pad * 2, 40);
       const availH = Math.max(chartViewport.clientHeight - pad * 2, 40);
       const treeW = tree.scrollWidth;
       const treeH = tree.scrollHeight;
       if (!treeW || !treeH) return;
-      const scale = Math.min(availW / treeW, availH / treeH, 1);
+      // Allow scale-up so the composition fills the slide
+      const scale = Math.min(availW / treeW, availH / treeH);
       chartScaler.style.transform = `scale(${scale})`;
     });
   }
