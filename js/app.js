@@ -19,7 +19,7 @@
   let fitRaf = 0;
   let exportBlob = null;
   let exportBlobPromise = null;
-  const APP_BUILD = "20261029d";
+  const APP_BUILD = "20261029e";
 
   function showToast(message) {
     toastEl.textContent = message;
@@ -74,10 +74,63 @@
     return roots;
   }
 
+  function personInitials(name) {
+    const parts = String(name || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    if (!parts.length) return "?";
+    return parts
+      .slice(0, 2)
+      .map((p) => p.charAt(0))
+      .join("")
+      .toUpperCase();
+  }
+
+  function createAvatar(person) {
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
+    avatar.setAttribute("aria-hidden", "true");
+
+    const photo = person.photo || person.image || person.avatar || "";
+    if (photo) {
+      const img = document.createElement("img");
+      img.src = photo;
+      img.alt = "";
+      img.loading = "lazy";
+      img.onerror = () => {
+        img.remove();
+        avatar.appendChild(placeholderMark(person.name));
+      };
+      avatar.appendChild(img);
+    } else {
+      avatar.appendChild(placeholderMark(person.name));
+    }
+    return avatar;
+  }
+
+  function placeholderMark(name) {
+    const wrap = document.createElement("div");
+    wrap.className = "ph";
+    wrap.innerHTML = `
+      <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" />
+        <circle cx="12" cy="10" r="3" />
+        <path d="M5.5 19.5c1.6-3 4-4.5 6.5-4.5s4.9 1.5 6.5 4.5" />
+      </svg>
+      <span class="ph-initials"></span>
+    `;
+    wrap.querySelector(".ph-initials").textContent = personInitials(name);
+    return wrap;
+  }
+
   function createCard(person, isRoot) {
     const card = document.createElement("article");
     card.className = `card${isRoot ? " root" : ""}`;
     card.setAttribute("aria-label", `${person.name}, ${person.role || ""}`);
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
 
     const name = document.createElement("p");
     name.className = "name";
@@ -87,14 +140,16 @@
     role.className = "role";
     role.textContent = person.role || "";
 
-    card.append(name, role);
+    meta.append(name, role);
 
     if (person.team) {
       const team = document.createElement("p");
       team.className = "team";
       team.textContent = person.team;
-      card.append(team);
+      meta.append(team);
     }
+
+    card.append(createAvatar(person), meta);
     return card;
   }
 

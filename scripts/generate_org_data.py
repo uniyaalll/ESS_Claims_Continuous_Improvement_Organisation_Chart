@@ -22,6 +22,7 @@ PEOPLE = [
         "role": "Head of ESS Claims",
         "manager_id": "",
         "team": "ESS Claims",
+        "photo": "",
     },
     {
         "id": "2",
@@ -29,6 +30,7 @@ PEOPLE = [
         "role": "Continuous Improvement Lead",
         "manager_id": "1",
         "team": "Continuous Improvement",
+        "photo": "",
     },
     {
         "id": "3",
@@ -36,6 +38,7 @@ PEOPLE = [
         "role": "Operations Excellence Manager",
         "manager_id": "1",
         "team": "Operations",
+        "photo": "",
     },
     {
         "id": "4",
@@ -43,6 +46,7 @@ PEOPLE = [
         "role": "Process Analyst",
         "manager_id": "2",
         "team": "Continuous Improvement",
+        "photo": "",
     },
     {
         "id": "5",
@@ -50,6 +54,7 @@ PEOPLE = [
         "role": "Process Analyst",
         "manager_id": "2",
         "team": "Continuous Improvement",
+        "photo": "",
     },
     {
         "id": "6",
@@ -57,6 +62,7 @@ PEOPLE = [
         "role": "Change Manager",
         "manager_id": "2",
         "team": "Continuous Improvement",
+        "photo": "",
     },
     {
         "id": "7",
@@ -64,6 +70,7 @@ PEOPLE = [
         "role": "Quality Lead",
         "manager_id": "3",
         "team": "Operations",
+        "photo": "",
     },
     {
         "id": "8",
@@ -71,10 +78,11 @@ PEOPLE = [
         "role": "Reporting Analyst",
         "manager_id": "3",
         "team": "Operations",
+        "photo": "",
     },
 ]
 
-COLUMNS = ["id", "name", "role", "manager_id", "team"]
+COLUMNS = ["id", "name", "role", "manager_id", "team", "photo"]
 
 
 def write_excel(people: list[dict]) -> Path:
@@ -115,6 +123,7 @@ def write_excel(people: list[dict]) -> Path:
         "role        Job title / role line under the name.",
         "manager_id  id of the manager; blank for the root.",
         "team        Optional team / department label.",
+        "photo       Optional profile image URL (leave blank for placeholder).",
     ]
     for i, line in enumerate(lines, start=1):
         cell = info.cell(i, 1, line)
@@ -124,7 +133,14 @@ def write_excel(people: list[dict]) -> Path:
             cell.font = note_font
     info.column_dimensions["A"].width = 90
 
-    widths = {"id": 10, "name": 22, "role": 32, "manager_id": 14, "team": 24}
+    widths = {
+        "id": 10,
+        "name": 22,
+        "role": 32,
+        "manager_id": 14,
+        "team": 24,
+        "photo": 36,
+    }
     for col, key in enumerate(COLUMNS, start=1):
         ws.column_dimensions[get_column_letter(col)].width = widths[key]
 
@@ -174,10 +190,14 @@ def main() -> None:
         people = people_from_excel(excel_path)
         if not people:
             people = PEOPLE
-            write_excel(people)
     else:
         people = PEOPLE
-        write_excel(people)
+
+    for person in people:
+        for key in COLUMNS:
+            person.setdefault(key, "")
+
+    write_excel(people)
     write_json(people)
     print(f"Wrote {len(people)} people to data/org-chart.xlsx and data/org-chart.json")
 

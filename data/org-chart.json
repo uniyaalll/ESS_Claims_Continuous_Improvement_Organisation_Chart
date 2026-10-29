@@ -7,56 +7,64 @@
       "name": "Alex Morgan",
       "role": "Head of ESS Claims",
       "manager_id": "",
-      "team": "ESS Claims"
+      "team": "ESS Claims",
+      "photo": ""
     },
     {
       "id": "2",
       "name": "Jordan Lee",
       "role": "Continuous Improvement Lead",
       "manager_id": "1",
-      "team": "Continuous Improvement"
+      "team": "Continuous Improvement",
+      "photo": ""
     },
     {
       "id": "3",
       "name": "Sam Rivera",
       "role": "Operations Excellence Manager",
       "manager_id": "1",
-      "team": "Operations"
+      "team": "Operations",
+      "photo": ""
     },
     {
       "id": "4",
       "name": "Casey Nguyen",
       "role": "Process Analyst",
       "manager_id": "2",
-      "team": "Continuous Improvement"
+      "team": "Continuous Improvement",
+      "photo": ""
     },
     {
       "id": "5",
       "name": "Riley Patel",
       "role": "Process Analyst",
       "manager_id": "2",
-      "team": "Continuous Improvement"
+      "team": "Continuous Improvement",
+      "photo": ""
     },
     {
       "id": "6",
       "name": "Taylor Brooks",
       "role": "Change Manager",
       "manager_id": "2",
-      "team": "Continuous Improvement"
+      "team": "Continuous Improvement",
+      "photo": ""
     },
     {
       "id": "7",
       "name": "Morgan Ellis",
       "role": "Quality Lead",
       "manager_id": "3",
-      "team": "Operations"
+      "team": "Operations",
+      "photo": ""
     },
     {
       "id": "8",
       "name": "Jamie Chen",
       "role": "Reporting Analyst",
       "manager_id": "3",
-      "team": "Operations"
+      "team": "Operations",
+      "photo": ""
     }
   ]
 }
