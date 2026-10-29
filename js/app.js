@@ -211,74 +211,62 @@
     });
   }
 
-  function isLikelyIos() {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  function blobToDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(reader.error || new Error("Could not read PNG"));
+      reader.readAsDataURL(blob);
+    });
   }
 
-  /**
-   * Save a PNG onto the user's device (Downloads / Files).
-   * Avoids showSaveFilePicker — that dialog is tied to the website origin
-   * and looks like the file is being saved "on" github.io.
-   */
-  function downloadBlobToDevice(blob, filename) {
-    // Legacy Edge
-    if (navigator.msSaveOrOpenBlob) {
-      navigator.msSaveOrOpenBlob(blob, filename);
-      return "downloads";
-    }
-
-    const url = URL.createObjectURL(blob);
-
-    // iOS Safari often ignores the download attribute; open the image
-    // so the user can tap Share → Save Image / Save to Files.
-    if (isLikelyIos()) {
-      const opened = window.open(url, "_blank");
-      if (!opened) {
-        // Popup blocked: use a temporary link with target=_blank
-        const link = document.createElement("a");
-        link.href = url;
-        link.target = "_blank";
-        link.rel = "noopener";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      }
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
-      return "ios-open";
-    }
-
+  function clickDownloadLink(href, filename) {
     const link = document.createElement("a");
-    link.href = url;
+    link.href = href;
+    link.setAttribute("download", filename);
     link.download = filename;
     link.rel = "noopener";
     link.style.position = "fixed";
     link.style.left = "-9999px";
+    link.style.top = "0";
     document.body.appendChild(link);
-    link.click();
+    // MouseEvent click is more reliable than link.click() on some mobile browsers
+    link.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true, view: window })
+    );
     link.remove();
-    // Keep the blob URL alive until the browser finishes fetching it
-    setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    return "downloads";
+  }
+
+  /**
+   * Always trigger a real file download to the device (Downloads / Files).
+   * No "open image / Share" path — that was confusing and not what users want.
+   */
+  async function downloadBlobToDevice(blob, filename) {
+    // Legacy Edge
+    if (navigator.msSaveOrOpenBlob) {
+      navigator.msSaveOrOpenBlob(blob, filename);
+      return;
+    }
+
+    // Data URLs + the download attribute save a file on more mobile browsers
+    // (including iOS Safari) instead of only previewing the image.
+    const dataUrl = await blobToDataUrl(blob);
+    if (!dataUrl) throw new Error("Could not encode PNG");
+    clickDownloadLink(dataUrl, filename);
   }
 
   async function downloadChart() {
     try {
       downloadBtn.disabled = true;
-      showToast("Preparing PNG for your device…");
+      showToast("Downloading PNG to your device…");
       const canvas = await chartToCanvas();
       const blob = await canvasToPngBlob(canvas);
       if (!blob.size) throw new Error("Empty image");
 
       const stamp = new Date().toISOString().slice(0, 10);
       const filename = `ess-claims-org-chart-${stamp}.png`;
-      const mode = downloadBlobToDevice(blob, filename);
-
-      if (mode === "ios-open") {
-        showToast("Image opened — tap Share → Save to Files");
-      } else {
-        showToast("Saving to your device Downloads folder");
-      }
+      await downloadBlobToDevice(blob, filename);
+      showToast("Download started — check your Downloads folder");
     } catch (err) {
       console.error(err);
       showToast("Download failed");
