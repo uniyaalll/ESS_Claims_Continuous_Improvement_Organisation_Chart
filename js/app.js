@@ -202,16 +202,82 @@
     return canvas;
   }
 
+  function canvasToPngBlob(canvas) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("Could not create PNG"))),
+        "image/png"
+      );
+    });
+  }
+
+  async function savePngBlob(blob, filename) {
+    // Chromium File System Access API — reliable after async click handlers
+    if (typeof window.showSaveFilePicker === "function") {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [
+          {
+            description: "PNG image",
+            accept: { "image/png": [".png"] },
+          },
+        ],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return "saved";
+    }
+
+    // Anchor + object URL (more reliable than huge data: URLs)
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.rel = "noopener";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    // Keep the blob alive long enough for the browser to start the download
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    return "triggered";
+  }
+
   async function downloadChart() {
     try {
       downloadBtn.disabled = true;
+      showToast("Preparing PNG…");
       const canvas = await chartToCanvas();
-      const link = document.createElement("a");
+      const blob = await canvasToPngBlob(canvas);
+      if (!blob.size) throw new Error("Empty image");
+
       const stamp = new Date().toISOString().slice(0, 10);
-      link.download = `ess-claims-org-chart-${stamp}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-      showToast("PNG downloaded");
+      const filename = `ess-claims-org-chart-${stamp}.png`;
+
+      try {
+        const mode = await savePngBlob(blob, filename);
+        showToast(mode === "saved" ? "PNG saved" : "PNG download started");
+      } catch (err) {
+        if (err && err.name === "AbortError") {
+          showToast("Download cancelled");
+          return;
+        }
+        // Last resort: open the image so the user can save it manually
+        const url = URL.createObjectURL(blob);
+        const opened = window.open(url, "_blank");
+        if (!opened) {
+          // Popup blocked — navigate current tab as final fallback
+          const link = document.createElement("a");
+          link.href = url;
+          link.target = "_blank";
+          link.rel = "noopener";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        }
+        showToast("Opened PNG — use Save image if needed");
+      }
     } catch (err) {
       console.error(err);
       showToast("Download failed");
@@ -225,12 +291,7 @@
       copyBtn.disabled = true;
       const canvas = await chartToCanvas();
 
-      const blob = await new Promise((resolve, reject) => {
-        canvas.toBlob(
-          (b) => (b ? resolve(b) : reject(new Error("Could not create image"))),
-          "image/png"
-        );
-      });
+      const blob = await canvasToPngBlob(canvas);
 
       if (navigator.clipboard && window.ClipboardItem) {
         await navigator.clipboard.write([
